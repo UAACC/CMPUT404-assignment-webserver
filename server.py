@@ -44,7 +44,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
     def check_file_exit(self, path, type):
         if os.path.exists(path):
             f = open(path, 'r')
-            value = f.read()
+            value = '\r\n\r\n'+ f.read()
             print(value)
             f.close()
             self.request.sendall(bytearray(
@@ -62,8 +62,8 @@ class MyWebServer(socketserver.BaseRequestHandler):
         print("Got a request of: %s\n" % self.data)
 
         data, method = seperate_method(self.data)
-        cssContent = None
-        htmlContent = None
+        #cssContent = None
+        #htmlContent = None
 
         if method != 'GET':
             # 405
@@ -76,13 +76,15 @@ class MyWebServer(socketserver.BaseRequestHandler):
             self.request.sendall(bytearray('Location: %s\r\n' %des_page, 'utf-8'))
             return
         else:
-            if 'html' in data:
-                type = 'text/html'
-                self.check_file_exit(data,type)
+            
+                
 
-            elif 'css' in data:
+            if 'css' in data:
                 type = 'text/css'
-                self.check_file_exit(data,type)
+            elif 'html' in data:
+                type = 'text/html'
+
+                
 
             elif data[-1] == '/':
 
