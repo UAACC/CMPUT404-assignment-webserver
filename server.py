@@ -50,6 +50,8 @@ class MyWebServer(socketserver.BaseRequestHandler):
             self.request.sendall(bytearray(
                 'HTTP/1.1 200 OK\r\nContent-Type: '+type+'\r\n'+value+'\r\n', 'utf-8'))
             return
+        
+
         else:
             self.request.sendall(
                 bytearray("HTTP/1.1 404 Not Found\r\nConnection: close\r\n", 'utf-8'))
@@ -60,6 +62,8 @@ class MyWebServer(socketserver.BaseRequestHandler):
         print("Got a request of: %s\n" % self.data)
 
         data, method = seperate_method(self.data)
+        cssContent = None
+        htmlContent = None
 
         if method != 'GET':
             # 405
@@ -84,6 +88,29 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
                 data = data + 'index.html'
                 type = 'text/html'
+
+            #if data == "/" or data == "/index.html":
+                #for file in os.listdir(os.getcwd()+'/www'):
+                    #if file == 'base.css':
+                        #f = open(os.getcwd()+'/www/base.css', 'r')
+                        #value = f.read()
+                       # print(value)
+                       # f.close()
+                       # cssContent = value
+                    #elif file == 'index.html':
+                        #f = open(os.getcwd()+'/www/index.html', 'r')
+                        #value = f.read()
+                        #print(value)
+                        #f.close()
+                        #htmlContent = value
+                        
+
+            #elif htmlContent != None:
+                #self.request.sendall(bytearray(
+                    #"HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n"+htmlContent+"\r\n", 'utf-8'))
+            ##elif cssContent:
+                #self.request.sendall(bytearray(
+                    #"HTTP/1.1 200 OK\r\nContent-Type: text/css; charset=utf-8\r\n\r\n"+cssContent+"\r\n", 'utf-8'))
             else:
                 self.request.sendall(bytearray("HTTP/1.1 404 Not Found\r\nConnection: close\r\n", 'utf-8'))
                 return
