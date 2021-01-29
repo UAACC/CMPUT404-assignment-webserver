@@ -1,14 +1,12 @@
-#  coding: utf-8 
-import socketserver
-
+#!/usr/bin/env python
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,15 +23,81 @@ import socketserver
 # run: python freetests.py
 
 # try: curl -v -X GET http://127.0.0.1:8080/
+import os
+import socketserver
+
+def seperate_method(data):
+    r_method = data.decode('utf-8').split()[0]
+    r_data = data.decode('utf-8').split()[1]
+
+    return r_data, r_method
 
 
 class MyWebServer(socketserver.BaseRequestHandler):
-    
+
+
+    #def sendback(self, send):
+        #self.request.sendall(send.encode())
+
+#https://stackoverflow.com/questions/82831/how-do-i-check-whether-a-file-exists-without-exceptions
+#gets in the type and path
+    def check_file_exit(self, path, type):
+        if os.path.exists(path):
+            f = open(path, 'r')
+            value = f.read()
+            print(value)
+            f.close()
+            self.request.sendall(bytearray(
+                'HTTP/1.1 200 OK\r\nContent-Type: '+type+'\r\n'+value+'\r\n', 'utf-8'))
+            return
+        else:
+            self.request.sendall(
+                bytearray("HTTP/1.1 404 Not Found\r\nConnection: close\r\n", 'utf-8'))
+            return
+
     def handle(self):
         self.data = self.request.recv(1024).strip()
-        print ("Got a request of: %s\n" % self.data)
-        self.request.sendall(bytearray("OK",'utf-8'))
+        print("Got a request of: %s\n" % self.data)
 
+        data, method = seperate_method(self.data)
+
+        if method != 'GET':
+            # 405
+            self.request.sendall(bytearray("HTTP/1.1 405 Method Not Allowed\r\n", 'utf-8'))
+            return
+        elif '.' not in data.split('/')[-1] and data[-1] != '/':
+            # 301
+            self.request.sendall(bytearray('HTTP/1.1 301 Moved Permanently\r\n', 'utf-8'))
+            des_page = data +'/'
+            self.request.sendall(bytearray('Location: %s\r\n' %des_page, 'utf-8'))
+            return
+        else:
+            if 'html' in data:
+                type = 'text/html'
+                self.check_file_exit(data,type)
+
+            elif 'css' in data:
+                type = 'text/css'
+                self.check_file_exit(data,type)
+
+            elif data[-1] == '/':
+
+                data = data + 'index.html'
+                type = 'text/html'
+            else:
+                self.request.sendall(bytearray("HTTP/1.1 404 Not Found\r\nConnection: close\r\n", 'utf-8'))
+                return
+
+
+            
+            
+            path = 'www' + data
+            self.check_file_exit(path, type)
+            return
+
+
+
+            
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
