@@ -121,6 +121,8 @@ class MyWebServer(socketserver.BaseRequestHandler):
             
             
             path = 'www' + data
+            #print(type)
+            #print(path)
             self.check_file_exit(path, type)
             return
 
